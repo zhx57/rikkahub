@@ -53,17 +53,20 @@ jobs:
           print('abi restricted')
           PY
 
+      # 密钥固定存在 Actions Secret 里：每次构建用同一个签名，
+      # 这样新包可以直接覆盖安装，不用卸载。
       - name: Prepare signing and google-services
+        env:
+          KEYSTORE_B64: ${{ secrets.RIKKAHUB_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.RIKKAHUB_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RIKKAHUB_KEY_ALIAS }}
         run: |
-          keytool -genkeypair -v -keystore app/app.key -alias rikkahub \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass rikkahub2026 -keypass rikkahub2026 \
-            -dname "CN=RikkaHub, OU=Dev, O=Dev, L=NA, S=NA, C=CN"
+          echo "$KEYSTORE_B64" | base64 -d > app/app.key
           {
             echo "storeFile=app.key"   # 相对 app 模块目录，不是仓库根目录
-            echo "storePassword=rikkahub2026"
-            echo "keyAlias=rikkahub"
-            echo "keyPassword=rikkahub2026"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$STORE_PASSWORD"
           } >> local.properties
           cat > app/google-services.json <<'JSON'
           {
