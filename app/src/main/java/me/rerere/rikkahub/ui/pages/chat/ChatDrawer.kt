@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -182,6 +184,8 @@ fun ChatDrawerContent(
         }
     }
 
+    val drawerHeaderScrollState = rememberScrollState()
+
     ModalDrawerSheet(
         modifier = Modifier.width(300.dp)
     ) {
@@ -189,6 +193,13 @@ fun ChatDrawerContent(
             modifier = Modifier.padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // 卡片区、头像、文件夹和排序按钮：空间不够时在这里滚动，
+            // 保证下面的会话列表和底部按钮不会被挤出屏幕
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(drawerHeaderScrollState)
+            ) {
             if (updateChecksEnabled && !isPlayStore) {
                 UpdateCard(vm)
             }
@@ -288,6 +299,8 @@ fun ChatDrawerContent(
                         scope.launch { conversationListState.scrollToItem(0) }
                     },
                 )
+            }
+
             }
 
             ConversationList(
