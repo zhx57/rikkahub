@@ -186,6 +186,7 @@ data class AnimationSetting(
     val expandCollapse: Boolean = true,
     val decorativeEffect: Boolean = true,
     val ripple: Boolean = true,
+    val imeAnimation: Boolean = true,
 )
 
 @Serializable

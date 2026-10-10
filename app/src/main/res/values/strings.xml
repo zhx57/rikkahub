@@ -816,6 +816,8 @@
   <string name="setting_page_built_in_tools_url_context_desc">Enable URL content processing</string>
   <string name="setting_page_chat_storage">Storage Management</string>
   <string name="setting_page_chat_storage_desc">%1$d files, %2$.2f MB</string>
+  <string name="setting_page_anim_ime_animation_title">Keyboard popup animation</string>
+  <string name="setting_page_anim_ime_animation_desc">The movement when the keyboard slides in or out. Driven by the system, needs Android 14 or newer</string>
   <string name="setting_page_animation_settings">Animation</string>
   <string name="setting_page_disable_all_animations_title">Disable all animations</string>
   <string name="setting_page_disable_all_animations_desc">Master switch. When on, no animation plays anywhere and the switches below are ignored.</string>

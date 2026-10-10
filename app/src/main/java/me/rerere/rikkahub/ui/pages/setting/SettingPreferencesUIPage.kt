@@ -470,6 +470,13 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_page_anim_ripple_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_page_anim_ripple_title)) },
                     )
+                    switchItem(
+                        checked = animationSetting.imeAnimation,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(imeAnimation = it)) },
+                        enabled = !animationSetting.disableAll,
+                        supportingContent = { Text(stringResource(R.string.setting_page_anim_ime_animation_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_anim_ime_animation_title)) },
+                    )
                 }
             }
         }

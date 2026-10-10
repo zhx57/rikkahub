@@ -27,6 +27,14 @@ enum class AnimationCategory {
 
     /** 涟漪与按压反馈 */
     Ripple,
+
+    /**
+     * 键盘（IME）弹出与收起的位移动画。
+     *
+     * 这类动画不是 Compose 画的，而是系统 InsetsPolicy 在驱动，
+     * 只能在系统层面拦截，对应 Android 14（API 34）及以上。
+     */
+    ImeAnimation,
 }
 
 /**

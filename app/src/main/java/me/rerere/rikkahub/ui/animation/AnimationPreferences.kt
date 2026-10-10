@@ -18,6 +18,7 @@ fun rememberAnimationPreference(setting: AnimationSetting): AnimationPreference 
             if (setting.expandCollapse) add(AnimationCategory.ExpandCollapse)
             if (setting.decorativeEffect) add(AnimationCategory.DecorativeEffect)
             if (setting.ripple) add(AnimationCategory.Ripple)
+            if (setting.imeAnimation) add(AnimationCategory.ImeAnimation)
         }
         AnimationPreference(disableAll = setting.disableAll, allowed = allowed)
     }

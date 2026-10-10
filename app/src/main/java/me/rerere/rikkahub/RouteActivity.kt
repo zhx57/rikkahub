@@ -74,6 +74,7 @@ import me.rerere.rikkahub.data.repository.MediaCreationRepository
 import me.rerere.rikkahub.service.MediaCreationForegroundService
 import me.rerere.rikkahub.ui.activity.SafeModeActivity
 import me.rerere.rikkahub.ui.components.ui.TTSController
+import me.rerere.rikkahub.ui.animation.DisableImeAnimation
 import me.rerere.rikkahub.ui.animation.rememberAnimationPreference
 import me.rerere.ui.animation.AnimationCategory
 import me.rerere.ui.animation.LocalAnimationPreference
@@ -310,6 +311,11 @@ class RouteActivity : ComponentActivity() {
                 handleIntent(pendingIntents.removeFirst())
             }
         }
+
+        // 键盘弹出动画要在 NavDisplay 外面注册，才能覆盖整个窗口的 IME inset 动画
+        DisableImeAnimation(
+            enabled = !animationPreference.enabled(AnimationCategory.ImeAnimation)
+        )
 
         SharedTransitionLayout {
             CompositionLocalProvider(
