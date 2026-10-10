@@ -807,7 +807,7 @@
   <string name="setting_page_chat_storage">存储管理</string>
   <string name="setting_page_chat_storage_desc">%1$d 个文件，%2$.2f MB</string>
   <string name="setting_page_anim_ime_animation_title">键盘弹出动画</string>
-  <string name="setting_page_anim_ime_animation_desc">键盘弹出收起时输入框的位移。由系统控制，需要 Android 14 及以上才能关闭</string>
+  <string name="setting_page_anim_ime_animation_desc">键盘弹出收起时输入框的位移。由系统控制，需要 Android 11 及以上才能关闭</string>
   <string name="setting_page_animation_settings">动画</string>
   <string name="setting_page_disable_all_animations_title">关闭全部动画</string>
   <string name="setting_page_disable_all_animations_desc">总开关。打开后任何动画都不再播放，下面的分类开关会被忽略。</string>
