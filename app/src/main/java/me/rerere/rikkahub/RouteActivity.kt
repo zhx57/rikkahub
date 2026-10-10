@@ -37,8 +37,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.material3.ripple.LocalRippleConfiguration
-import androidx.compose.material3.ripple.RippleConfiguration
+import androidx.compose.material3.LocalRippleConfiguration
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -322,7 +322,7 @@ class RouteActivity : ComponentActivity() {
                 LocalAnimationPreference provides animationPreference,
                 // 全局关闭涟漪/按压反馈：颜色设为透明即可保留原有形状与时长设置
                 LocalRippleConfiguration provides remember(rippleEnabled) {
-                    RippleConfiguration(color = if (rippleEnabled) Color.Unspecified else Color.Transparent)
+                    if (rippleEnabled) RippleConfiguration() else RippleConfiguration(color = Color.Transparent)
                 },
             ) {
                 Toaster(
