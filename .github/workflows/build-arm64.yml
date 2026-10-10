@@ -60,7 +60,7 @@ jobs:
             -storepass rikkahub2026 -keypass rikkahub2026 \
             -dname "CN=RikkaHub, OU=Dev, O=Dev, L=NA, S=NA, C=CN"
           {
-            echo "storeFile=app/app.key"
+            echo "storeFile=app.key"   # 相对 app 模块目录，不是仓库根目录
             echo "storePassword=rikkahub2026"
             echo "keyAlias=rikkahub"
             echo "keyPassword=rikkahub2026"
