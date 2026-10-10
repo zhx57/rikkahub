@@ -11,11 +11,15 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.ui.animation.AnimationCategory
+import me.rerere.ui.animation.animationEnabled
 
 @Composable
 fun RabbitLoadingIndicator(modifier: Modifier = Modifier) {
     val useAppIconStyleLoadingIndicator = LocalSettings.current.displaySetting.useAppIconStyleLoadingIndicator
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    // 关掉加载动画时不再启动矢量动画帧，只显示静态图标
+    val animated = animationEnabled(AnimationCategory.LoadingIndicator)
 
     if (useAppIconStyleLoadingIndicator) {
         AndroidView(
@@ -25,13 +29,13 @@ fun RabbitLoadingIndicator(modifier: Modifier = Modifier) {
                     val drawable = AppCompatResources.getDrawable(context, R.drawable.rabbit) as? AnimatedVectorDrawable
                     setImageDrawable(drawable)
                     drawable?.setTint(primaryColor)
-                    drawable?.start()
+                    if (animated) drawable?.start() else drawable?.stop()
                 }
             },
             update = { imageView ->
                 (imageView.drawable as? AnimatedVectorDrawable)?.apply {
                     setTint(primaryColor)
-                    start()
+                    if (animated) start() else stop()
                 }
             }
         )

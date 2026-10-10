@@ -9,6 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,10 +33,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.material3.ripple.LocalRippleConfiguration
+import androidx.compose.material3.ripple.RippleConfiguration
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
@@ -68,6 +74,9 @@ import me.rerere.rikkahub.data.repository.MediaCreationRepository
 import me.rerere.rikkahub.service.MediaCreationForegroundService
 import me.rerere.rikkahub.ui.activity.SafeModeActivity
 import me.rerere.rikkahub.ui.components.ui.TTSController
+import me.rerere.rikkahub.ui.animation.rememberAnimationPreference
+import me.rerere.ui.animation.AnimationCategory
+import me.rerere.ui.animation.LocalAnimationPreference
 import me.rerere.rikkahub.ui.context.LocalASRState
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -279,6 +288,10 @@ class RouteActivity : ComponentActivity() {
         }
         val migrationState by DatabaseMigrationTracker.state.collectAsStateWithLifecycle()
 
+        val animationPreference = rememberAnimationPreference(settings.animationSetting)
+        val rippleEnabled = animationPreference.enabled(AnimationCategory.Ripple)
+        val pageTransitionEnabled = animationPreference.enabled(AnimationCategory.PageTransition)
+
         val startScreen = Screen.Chat(
             id = if (readBooleanPreference("create_new_conversation_on_start", true)) {
                 Uuid.random().toString()
@@ -306,6 +319,11 @@ class RouteActivity : ComponentActivity() {
                 LocalToaster provides toastState,
                 LocalTTSState provides tts,
                 LocalASRState provides asr,
+                LocalAnimationPreference provides animationPreference,
+                // 全局关闭涟漪/按压反馈：颜色设为透明即可保留原有形状与时长设置
+                LocalRippleConfiguration provides remember(rippleEnabled) {
+                    RippleConfiguration(color = if (rippleEnabled) Color.Unspecified else Color.Transparent)
+                },
             ) {
                 Toaster(
                     state = toastState,
@@ -330,24 +348,46 @@ class RouteActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         onBack = { backStack.removeLastOrNull() },
                         transitionSpec = {
-                            if (backStack.size == 1) fadeIn() togetherWith fadeOut()
+                            if (!pageTransitionEnabled) {
+                                EnterTransition.None togetherWith ExitTransition.None
+                            } else if (backStack.size == 1) fadeIn() togetherWith fadeOut()
                             else {
                                 slideInHorizontally { it } togetherWith
                                     slideOutHorizontally { -it / 2 } + scaleOut(targetScale = 0.7f) + fadeOut()
                             }
                         },
                         popTransitionSpec = {
-                            slideInHorizontally { -it / 2 } + scaleIn(initialScale = 0.7f) + fadeIn() togetherWith
-                                slideOutHorizontally { it }
+                            if (!pageTransitionEnabled) {
+                                EnterTransition.None togetherWith ExitTransition.None
+                            } else {
+                                slideInHorizontally { -it / 2 } + scaleIn(initialScale = 0.7f) + fadeIn() togetherWith
+                                    slideOutHorizontally { it }
+                            }
                         },
                         predictivePopTransitionSpec = {
-                            slideInHorizontally { -it / 2 } + scaleIn(initialScale = 0.7f) + fadeIn() togetherWith
-                                slideOutHorizontally { it }
+                            if (!pageTransitionEnabled) {
+                                EnterTransition.None togetherWith ExitTransition.None
+                            } else {
+                                slideInHorizontally { -it / 2 } + scaleIn(initialScale = 0.7f) + fadeIn() togetherWith
+                                    slideOutHorizontally { it }
+                            }
                         },
                         entryProvider = entryProvider {
                             entry<Screen.Chat>(
-                                metadata = NavDisplay.transitionSpec { fadeIn() togetherWith fadeOut() }
-                                    + NavDisplay.popTransitionSpec { fadeIn() togetherWith fadeOut() }
+                                metadata = NavDisplay.transitionSpec {
+                                    if (!pageTransitionEnabled) {
+                                        EnterTransition.None togetherWith ExitTransition.None
+                                    } else {
+                                        fadeIn() togetherWith fadeOut()
+                                    }
+                                }
+                                    + NavDisplay.popTransitionSpec {
+                                        if (!pageTransitionEnabled) {
+                                            EnterTransition.None togetherWith ExitTransition.None
+                                        } else {
+                                            fadeIn() togetherWith fadeOut()
+                                        }
+                                    }
                             ) { key ->
                                 ChatPage(
                                     id = Uuid.parse(key.id),

@@ -11,6 +11,8 @@ import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Cancel01
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -96,6 +98,8 @@ import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.data.model.withConversation
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.ui.components.message.ChatMessage
+import me.rerere.ui.animation.AnimationCategory
+import me.rerere.ui.animation.animationEnabled
 import me.rerere.rikkahub.ui.components.ui.ErrorCardsDisplay
 import me.rerere.rikkahub.ui.components.ui.RabbitLoadingIndicator
 import me.rerere.rikkahub.ui.hooks.ImeLazyListAutoScroller
@@ -137,11 +141,16 @@ fun ChatList(
     onToggleFavorite: ((MessageNode) -> Unit)? = null,
     onConversationSystemPromptChange: ((String?) -> Unit)? = null,
 ) {
+    val contentTransitionEnabled = animationEnabled(AnimationCategory.ContentTransition)
     AnimatedContent(
         targetState = previewMode,
         label = "ChatListMode",
         transitionSpec = {
-            (fadeIn() + scaleIn(initialScale = 0.8f) togetherWith fadeOut() + scaleOut(targetScale = 0.8f))
+            if (contentTransitionEnabled) {
+                (fadeIn() + scaleIn(initialScale = 0.8f) togetherWith fadeOut() + scaleOut(targetScale = 0.8f))
+            } else {
+                EnterTransition.None togetherWith ExitTransition.None
+            }
         }
     ) { target ->
         if (target) {
@@ -761,15 +770,16 @@ private fun BoxScope.MessageJumper(
     scope: CoroutineScope,
     state: LazyListState
 ) {
+    val expandEnabled = animationEnabled(AnimationCategory.ExpandCollapse)
     AnimatedVisibility(
         visible = show,
         modifier = Modifier.align(if (onLeft) Alignment.CenterStart else Alignment.CenterEnd),
-        enter = slideInHorizontally(
+        enter = if (expandEnabled) slideInHorizontally(
             initialOffsetX = { if (onLeft) -it * 2 else it * 2 },
-        ),
-        exit = slideOutHorizontally(
+        ) else EnterTransition.None,
+        exit = if (expandEnabled) slideOutHorizontally(
             targetOffsetX = { if (onLeft) -it * 2 else it * 2 },
-        )
+        ) else ExitTransition.None,
     ) {
         Column(
             modifier = Modifier.padding(8.dp),

@@ -1,0 +1,116 @@
+name: Build ARM64 APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/animation-switches
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web-ui/pnpm-lock.yaml
+
+      - name: Install web-ui dependencies
+        working-directory: web-ui
+        run: pnpm install --frozen-lockfile
+
+      # 只保留 arm64-v8a，省掉另外两个 ABI 的 native 编译时间
+      - name: Restrict ABI to arm64-v8a
+        run: |
+          python3 - <<'PY'
+          p = 'app/build.gradle.kts'
+          s = open(p).read()
+          s = s.replace('abiFilters += listOf("arm64-v8a", "x86_64")', 'abiFilters += listOf("arm64-v8a")')
+          s = s.replace('include("arm64-v8a", "x86_64")', 'include("arm64-v8a")')
+          open(p, 'w').write(s)
+          print('abi restricted')
+          PY
+
+      - name: Prepare signing and google-services
+        run: |
+          keytool -genkeypair -v -keystore app/app.key -alias rikkahub \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass rikkahub2026 -keypass rikkahub2026 \
+            -dname "CN=RikkaHub, OU=Dev, O=Dev, L=NA, S=NA, C=CN"
+          {
+            echo "storeFile=app/app.key"
+            echo "storePassword=rikkahub2026"
+            echo "keyAlias=rikkahub"
+            echo "keyPassword=rikkahub2026"
+          } >> local.properties
+          cat > app/google-services.json <<'JSON'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "rikkahub-local-build",
+              "storage_bucket": "rikkahub-local-build.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                  "android_client_info": {
+                    "package_name": "me.rerere.rikkahub"
+                  }
+                },
+                "api_key": [
+                  { "current_key": "AIzaSyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" }
+                ]
+              }
+            ],
+            "configuration_version": "1"
+          }
+          JSON
+
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: arm64-${{ runner.os }}-${{ hashFiles('**/*.gradle*', 'gradle-wrapper.properties') }}
+          restore-keys: arm64-${{ runner.os }}-
+
+      - name: Build
+        run: ./gradlew :app:assembleRelease --console=plain --max-workers=2
+
+      - name: Collect APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/release/*.apk dist/ 2>/dev/null || true
+          ls -la dist
+          md5sum dist/*.apk || true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: rikkahub-arm64-apk
+          path: dist/*.apk
+          if-no-files-found: error

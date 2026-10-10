@@ -1,6 +1,8 @@
 package me.rerere.rikkahub.ui.components.message
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -50,6 +52,8 @@ import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.modifier.shimmer
+import me.rerere.ui.animation.AnimationCategory
+import me.rerere.ui.animation.animationEnabled
 import me.rerere.rikkahub.utils.extractThinkingTitle
 import kotlin.time.Clock
 import kotlin.time.Duration
@@ -258,12 +262,17 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
 @Composable
 private fun ReasoningTitle(title: String) {
     val chatFontFamily = LocalTextStyle.current.fontFamily
+    val titleTransitionEnabled = animationEnabled(AnimationCategory.ContentTransition)
     AnimatedContent(
         targetState = title,
         transitionSpec = {
-            (slideInVertically { height -> height } + fadeIn()).togetherWith(
-                slideOutVertically { height -> -height } + fadeOut()
-            )
+            if (titleTransitionEnabled) {
+                (slideInVertically { height -> height } + fadeIn()).togetherWith(
+                    slideOutVertically { height -> -height } + fadeOut()
+                )
+            } else {
+                EnterTransition.None togetherWith ExitTransition.None
+            }
         }
     ) {
         Text(

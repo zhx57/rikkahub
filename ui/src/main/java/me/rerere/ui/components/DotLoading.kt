@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.rerere.ui.animation.AnimationCategory
+import me.rerere.ui.animation.animationEnabled
 
 @Preview
 @Composable
@@ -27,16 +29,22 @@ fun DotLoading(
     animationDuration: Int = 600,
     size: Dp = 16.dp,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "dot_loading")
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = animationDuration),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "dot_alpha"
-    )
+    // 关掉加载动画后保持一个固定的中间透明度，不再无限循环
+    val animated = animationEnabled(AnimationCategory.LoadingIndicator)
+    val alpha = if (animated) {
+        val infiniteTransition = rememberInfiniteTransition(label = "dot_loading")
+        infiniteTransition.animateFloat(
+            initialValue = 0.3f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = animationDuration),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "dot_alpha"
+        ).value
+    } else {
+        0.65f
+    }
 
     Box(
         modifier = Modifier

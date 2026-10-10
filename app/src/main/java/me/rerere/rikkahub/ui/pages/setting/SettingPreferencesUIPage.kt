@@ -45,6 +45,7 @@ import me.rerere.hugeicons.stroke.Delete02
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
+import me.rerere.rikkahub.data.datastore.AnimationSetting
 import me.rerere.rikkahub.data.datastore.DisplaySetting
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FileUtils
@@ -68,10 +69,16 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     val chatFontFamily = rememberChatFontFamily(displaySetting)
+    var animationSetting by remember(settings) { mutableStateOf(settings.animationSetting) }
 
     fun updateDisplaySetting(setting: DisplaySetting) {
         displaySetting = setting
         vm.updateSettings { it.copy(displaySetting = setting) }
+    }
+
+    fun updateAnimationSetting(setting: AnimationSetting) {
+        animationSetting = setting
+        vm.updateSettings { it.copy(animationSetting = setting) }
     }
 
     val importSuccessMsg = stringResource(R.string.setting_display_page_custom_font_import_success)
@@ -404,6 +411,63 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                                 }
                             )
                         },
+                    )
+                }
+            }
+
+            item {
+                CardGroup(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = { Text(stringResource(R.string.setting_page_animation_settings)) },
+                ) {
+                    switchItem(
+                        checked = animationSetting.disableAll,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(disableAll = it)) },
+                        enabled = true,
+                        supportingContent = { Text(stringResource(R.string.setting_page_disable_all_animations_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_disable_all_animations_title)) },
+                    )
+                    switchItem(
+                        checked = animationSetting.pageTransition,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(pageTransition = it)) },
+                        enabled = !animationSetting.disableAll,
+                        supportingContent = { Text(stringResource(R.string.setting_page_anim_page_transition_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_anim_page_transition_title)) },
+                    )
+                    switchItem(
+                        checked = animationSetting.contentTransition,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(contentTransition = it)) },
+                        enabled = !animationSetting.disableAll,
+                        supportingContent = { Text(stringResource(R.string.setting_page_anim_content_transition_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_anim_content_transition_title)) },
+                    )
+                    switchItem(
+                        checked = animationSetting.loadingIndicator,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(loadingIndicator = it)) },
+                        enabled = !animationSetting.disableAll,
+                        supportingContent = { Text(stringResource(R.string.setting_page_anim_loading_indicator_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_anim_loading_indicator_title)) },
+                    )
+                    switchItem(
+                        checked = animationSetting.expandCollapse,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(expandCollapse = it)) },
+                        enabled = !animationSetting.disableAll,
+                        supportingContent = { Text(stringResource(R.string.setting_page_anim_expand_collapse_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_anim_expand_collapse_title)) },
+                    )
+                    switchItem(
+                        checked = animationSetting.decorativeEffect,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(decorativeEffect = it)) },
+                        enabled = !animationSetting.disableAll,
+                        supportingContent = { Text(stringResource(R.string.setting_page_anim_decorative_effect_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_anim_decorative_effect_title)) },
+                    )
+                    switchItem(
+                        checked = animationSetting.ripple,
+                        onCheckedChange = { updateAnimationSetting(animationSetting.copy(ripple = it)) },
+                        enabled = !animationSetting.disableAll,
+                        supportingContent = { Text(stringResource(R.string.setting_page_anim_ripple_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_anim_ripple_title)) },
                     )
                 }
             }

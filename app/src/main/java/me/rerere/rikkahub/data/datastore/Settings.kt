@@ -36,6 +36,7 @@ data class Settings(
     val customThemes: List<CustomTheme> = emptyList(),
     val developerMode: Boolean = false,
     val displaySetting: DisplaySetting = DisplaySetting(),
+    val animationSetting: AnimationSetting = AnimationSetting(),
     val networkSetting: NetworkSetting = NetworkSetting(),
     val favoriteModels: List<Uuid> = emptyList(),
     val chatModelId: Uuid = Uuid.random(),
@@ -168,6 +169,23 @@ data class DisplaySetting(
     val enableVolumeKeyScroll: Boolean = false,
     val volumeKeyScrollRatio: Float = 1.0f,
     val conversationSortOrder: ConversationSortOrder = ConversationSortOrder.UPDATE_TIME,
+)
+
+/**
+ * 动画开关。
+ *
+ * [disableAll] 是总开关，打开后下面所有分类都不再生效；
+ * 分类开关只在总开关打开时起作用，默认全部开启（即保持官方默认动画）。
+ */
+@Serializable
+data class AnimationSetting(
+    val disableAll: Boolean = false,
+    val pageTransition: Boolean = true,
+    val contentTransition: Boolean = true,
+    val loadingIndicator: Boolean = true,
+    val expandCollapse: Boolean = true,
+    val decorativeEffect: Boolean = true,
+    val ripple: Boolean = true,
 )
 
 @Serializable

@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
+import me.rerere.ui.animation.AnimationCategory
+import me.rerere.ui.animation.animationEnabled
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -37,22 +39,27 @@ fun MeshGradientBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
-    val transition = rememberInfiniteTransition(label = "aurora")
+    // 关闭装饰性动效后，光斑固定在初始相位，不再缓慢漂移
+    val decorativeEnabled = animationEnabled(AnimationCategory.DecorativeEffect)
 
     // 每个光斑一个相位(0..2π),不同时长 → 错落漂移,避免整齐划一
     // 增加 loops 参数，按需放大目标值和总动画时长
     @Composable
-    fun phase(durationMillis: Int, loops: Int, label: String) = transition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * PI * loops).toFloat(),
-        animationSpec = infiniteRepeatable(tween(durationMillis * loops, easing = LinearEasing)),
-        label = label,
-    )
+    fun phase(durationMillis: Int, loops: Int, label: String): Float {
+        if (!decorativeEnabled) return 0f
+        val transition = rememberInfiniteTransition(label = "aurora")
+        return transition.animateFloat(
+            initialValue = 0f,
+            targetValue = (2 * PI * loops).toFloat(),
+            animationSpec = infiniteRepeatable(tween(durationMillis * loops, easing = LinearEasing)),
+            label = label,
+        ).value
+    }
     // 针对各自身上的乘数，传入消除小数所需的最小公倍数圈数
-    val p1 by phase(5_500, loops = 20, "p1") // 1.15 对应 20 圈 (总长 110秒)
-    val p2 by phase(7_000, loops = 1,  "p2") // 1.0  对应 1 圈
-    val p3 by phase(8_500, loops = 10, "p3") // 0.9  对应 10 圈 (总长 85秒)
-    val p4 by phase(6_200, loops = 10, "p4") // 1.1  对应 10 圈 (总长 62秒)
+    val p1 = phase(5_500, loops = 20, "p1") // 1.15 对应 20 圈 (总长 110秒)
+    val p2 = phase(7_000, loops = 1,  "p2") // 1.0  对应 1 圈
+    val p3 = phase(8_500, loops = 10, "p3") // 0.9  对应 10 圈 (总长 85秒)
+    val p4 = phase(6_200, loops = 10, "p4") // 1.1  对应 10 圈 (总长 62秒)
 
     val dark = LocalDarkMode.current
     val baseGradient = if (dark) {
